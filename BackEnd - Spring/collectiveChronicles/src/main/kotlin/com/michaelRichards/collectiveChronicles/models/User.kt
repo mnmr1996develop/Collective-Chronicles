@@ -4,10 +4,13 @@ import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-class MUser(
+@Table(name = "_user")
+class User(
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,6 +35,10 @@ class MUser(
     @Enumerated(value = EnumType.STRING)
     var role: Role = Role.ROLE_USER,
 
+    var accountCreatedAt: LocalDateTime? = null,
+
+    var birthday: LocalDate? = null,
+
     private var isAccountNonExpired: Boolean = true,
 
     private var isAccountNonLocked: Boolean = true,
@@ -50,10 +57,19 @@ class MUser(
     override fun getPassword(): String = this.password
 
     override fun getUsername(): String = this.username
+    fun setUsername(username: String){
+        this.username = username
+    }
 
     override fun isAccountNonExpired(): Boolean = this.isAccountNonExpired
+    fun setIsAccountNonExpired(isAccountNonExpired: Boolean){
+        this.isAccountNonExpired = isAccountNonExpired
+    }
 
     override fun isAccountNonLocked(): Boolean = this.isAccountNonLocked
+    fun setIsAccountNonLocked(isAccountNonLocked: Boolean){
+        this.isAccountNonLocked = isAccountNonLocked
+    }
 
     override fun isCredentialsNonExpired(): Boolean = this.isCredentialsNonExpired
 

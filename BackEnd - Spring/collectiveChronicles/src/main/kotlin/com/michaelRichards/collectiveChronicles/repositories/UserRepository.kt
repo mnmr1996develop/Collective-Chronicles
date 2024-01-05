@@ -1,13 +1,12 @@
 package com.michaelRichards.collectiveChronicles.repositories
 
-import com.michaelRichards.collectiveChronicles.models.MUser
+import com.michaelRichards.collectiveChronicles.models.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 @Repository
-interface UserRepository: JpaRepository<MUser, UUID> {
+interface UserRepository: JpaRepository<User, UUID> {
 
-
-    fun findByUsernameIgnoreCase(username: String): MUser?
+    fun findByUsernameIgnoreCase(username: String): User?
 }
