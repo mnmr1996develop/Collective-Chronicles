@@ -11,16 +11,11 @@ import com.michaelRichards.collectiveChronicles.repositories.TokenRepository
 import com.michaelRichards.collectiveChronicles.repositories.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.apache.coyote.http11.Constants.a
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContext
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
-
 import org.springframework.stereotype.Service
 
 @Service
@@ -32,7 +27,7 @@ class AuthenticationService(
     private val authenticationManager: AuthenticationManager
 ) {
 
-    fun register(registerRequest: RegisterRequest): AuthenticationResponse {
+    fun register(registerRequest: RegisterRequest, role: Role = Role.ROLE_USER): AuthenticationResponse {
         val user = User(
             firstName = registerRequest.firstName,
             lastName = registerRequest.lastName,
@@ -40,7 +35,7 @@ class AuthenticationService(
             username = registerRequest.username,
             birthday = registerRequest.birthday,
             password = passwordEncoder.encode(registerRequest.password),
-            role = Role.ROLE_USER
+            role = role
         )
 
 
@@ -96,6 +91,7 @@ class AuthenticationService(
         )
         tokenRepository.save(jwtToken)
     }
+
 
     fun refreshToken(request: HttpServletRequest, response: HttpServletResponse) {
 
