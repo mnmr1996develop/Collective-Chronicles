@@ -35,6 +35,9 @@ class User(
     @Enumerated(value = EnumType.STRING)
     var role: Role = Role.ROLE_USER,
 
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    val tokens: MutableSet<Token> = mutableSetOf(),
+
     var accountCreatedAt: LocalDateTime? = null,
 
     var birthday: LocalDate? = null,
@@ -48,6 +51,7 @@ class User(
     private var isEnabled: Boolean = true,
 
     ) : UserDetails {
+
 
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf(
