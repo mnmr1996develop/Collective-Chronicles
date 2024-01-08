@@ -26,3 +26,11 @@ spring:
     database: mysql
 aws:
   region: us-east-2
+
+application:
+  security:
+    jwt:
+      secret-key: 0af8dc2d7c5e0e167d723d75ab45b965b7b50839058371b2a1bafb0d727415e0
+      expiration: 86400000
+      refresh:
+        expiration: 604800000

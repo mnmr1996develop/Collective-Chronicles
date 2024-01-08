@@ -1,6 +1,7 @@
 package com.michaelRichards.collectiveChronicles.config
 
 import com.michaelRichards.collectiveChronicles.repositories.TokenRepository
+import com.michaelRichards.collectiveChronicles.services.JWTService
 import com.michaelRichards.collectiveChronicles.services.UserService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

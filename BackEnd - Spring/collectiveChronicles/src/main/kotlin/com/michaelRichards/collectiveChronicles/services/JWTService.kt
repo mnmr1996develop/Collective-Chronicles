@@ -1,10 +1,11 @@
-package com.michaelRichards.collectiveChronicles.config
+package com.michaelRichards.collectiveChronicles.services
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.security.Key
@@ -12,13 +13,21 @@ import java.util.*
 import java.util.function.Function
 
 @Service
-class JWTService {
+class JWTService(
+    @Value("\${application.security.jwt.secret-key}")
+    private val secretKey: String,
 
-    companion object{
-        const val JWT_SECRET_KEY = "0af8dc2d7c5e0e167d723d75ab45b965b7b50839058371b2a1bafb0d727415e0"
-        const val JWT_EXPIRATION = 86400000L
+    @Value("\${application.security.jwt.expiration}")
+    private val jwtExpiration: Long,
+
+    @Value("\${application.security.jwt.refresh.expiration}")
+    private val jwtRefreshExpiration: Long,
+) {
+
+    companion object {
         const val JWT_REFRESH_EXPIRATION = 604800000L
     }
+
 
     fun extractUsername(token: String): String {
         return extractClaim(token) { obj: Claims -> obj.subject }
@@ -29,8 +38,12 @@ class JWTService {
         return claimsResolvers.apply(claims)
     }
 
-    fun generateToken(userDetails: UserDetails,extraClaims: Map<String, Any> = mutableMapOf()): String =
-        buildToken(extraClaims, userDetails, JWT_EXPIRATION)
+    fun generateToken(userDetails: UserDetails, extraClaims: Map<String, Any> = mutableMapOf()): String =
+        buildToken(extraClaims, userDetails, jwtExpiration)
+
+    fun generateRefreshToken(userDetails: UserDetails): String =
+        buildToken(mutableMapOf(), userDetails, jwtRefreshExpiration)
+
 
     private fun extractAllClaims(token: String): Claims = Jwts
         .parserBuilder()
@@ -50,7 +63,7 @@ class JWTService {
         .compact()
 
     private fun getSigningKey(): Key {
-        val keyBytes = Decoders.BASE64.decode(JWT_SECRET_KEY)
+        val keyBytes = Decoders.BASE64.decode(secretKey)
         return Keys.hmacShaKeyFor(keyBytes)
     }
 

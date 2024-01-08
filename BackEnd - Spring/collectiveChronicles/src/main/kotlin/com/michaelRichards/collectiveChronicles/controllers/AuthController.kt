@@ -4,6 +4,8 @@ import com.michaelRichards.collectiveChronicles.dtos.requests.AuthenticateReques
 import com.michaelRichards.collectiveChronicles.dtos.responses.AuthenticationResponse
 import com.michaelRichards.collectiveChronicles.dtos.requests.RegisterRequest
 import com.michaelRichards.collectiveChronicles.services.AuthenticationService
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -27,5 +29,12 @@ class AuthController(
     fun authenticate(
         @RequestBody registerRequest: AuthenticateRequest
     ) : ResponseEntity<AuthenticationResponse> = ResponseEntity.ok(authenticationService.authenticate(registerRequest))
+
+    @PostMapping("/refresh-token")
+    fun refreshToken(
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ) = authenticationService.refreshToken(request, response)
+
 
 }
