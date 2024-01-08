@@ -54,6 +54,12 @@ class User(
 
 
 
+    @OneToMany(mappedBy = "storyOwner", orphanRemoval = true)
+    val ownedStories: MutableSet<FullStory> = mutableSetOf()
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    val storyPieces: MutableSet<StoryPiece> = mutableSetOf()
+
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf(
         SimpleGrantedAuthority(role.name)
     )
@@ -61,17 +67,17 @@ class User(
     override fun getPassword(): String = this.password
 
     override fun getUsername(): String = this.username
-    fun setUsername(username: String){
+    fun setUsername(username: String) {
         this.username = username
     }
 
     override fun isAccountNonExpired(): Boolean = this.isAccountNonExpired
-    fun setIsAccountNonExpired(isAccountNonExpired: Boolean){
+    fun setIsAccountNonExpired(isAccountNonExpired: Boolean) {
         this.isAccountNonExpired = isAccountNonExpired
     }
 
     override fun isAccountNonLocked(): Boolean = this.isAccountNonLocked
-    fun setIsAccountNonLocked(isAccountNonLocked: Boolean){
+    fun setIsAccountNonLocked(isAccountNonLocked: Boolean) {
         this.isAccountNonLocked = isAccountNonLocked
     }
 

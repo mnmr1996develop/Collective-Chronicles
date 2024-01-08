@@ -30,7 +30,7 @@ class AdminController(
     @PutMapping("/users/{username}/lockAccount")
     fun lockUserAccount(@PathVariable username: String): ResponseEntity<AdminDetailResponse> = ResponseEntity.ok(userService.lockAccount(username))
 
-    @PutMapping("/users/{username}/lockAccount")
+    @PutMapping("/users/{username}/unlockAccount")
     fun unlockUserAccount(@PathVariable username: String): ResponseEntity<AdminDetailResponse> = ResponseEntity.ok(userService.unlockAccount(username))
 
 
