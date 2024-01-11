@@ -8,18 +8,22 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -87,27 +91,29 @@ fun LoginScreen(
     }
 
 
-
-
     val context = LocalContext.current
     LaunchedEffect(viewmodel, context) {
-        viewmodel.authResults.collect{
-            when(it){
+        viewmodel.authResults.collect {
+            when (it) {
                 is AuthenticationResults.Authenticated -> {
                     navController.navigate(Graphs.MainGraph.graphName)
                 }
+
                 is AuthenticationResults.BadLoginData -> {
                     username.value = ""
                     password.value = ""
                 }
+
                 is AuthenticationResults.BadRequest -> TODO()
                 is AuthenticationResults.Loading -> {
                     enabled = false
                 }
+
                 is AuthenticationResults.TimeOutError -> {
                     Toast.makeText(context, "Connection Error, try again", Toast.LENGTH_LONG).show()
                     enabled = true
                 }
+
                 is AuthenticationResults.UnAuthenticated -> {}
             }
         }
@@ -157,10 +163,13 @@ fun LoginScreen(
                         )
                     })
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = null
-                    )
+
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = null
+                        )
+
+
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -183,8 +192,8 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
                     enabled = enabled,
                     onClick = { login(username = username, password = password, viewmodel) }
@@ -196,7 +205,7 @@ fun LoginScreen(
                     )
                 }
 
-                if(!enabled){
+                if (!enabled) {
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
