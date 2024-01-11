@@ -1,5 +1,6 @@
 package com.michaelrichards.collectivechronicles.screens.loginScreen
 
+import android.widget.Toast
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -20,13 +21,18 @@ import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,15 +48,21 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.michaelrichards.collectivechronicles.R
 import com.michaelrichards.collectivechronicles.components.AuthTextField
+import com.michaelrichards.collectivechronicles.dtos.requests.AuthenticationRequest
+import com.michaelrichards.collectivechronicles.navigation.Graphs
 import com.michaelrichards.collectivechronicles.navigation.Screens
+import com.michaelrichards.collectivechronicles.repositories.results.ApiSuccessFailState
+import com.michaelrichards.collectivechronicles.repositories.results.AuthenticationResults
 
 
 @Composable
 fun LoginScreen(
     navController: NavController,
+    viewmodel: LoginViewModel = hiltViewModel(),
     darkTheme: Boolean = isSystemInDarkTheme()
 ) {
 
@@ -65,6 +77,42 @@ fun LoginScreen(
     var showPassword by rememberSaveable {
         mutableStateOf(false)
     }
+
+    var error by remember {
+        mutableStateOf(false)
+    }
+
+    var enabled by remember {
+        mutableStateOf(true)
+    }
+
+
+
+
+    val context = LocalContext.current
+    LaunchedEffect(viewmodel, context) {
+        viewmodel.authResults.collect{
+            when(it){
+                is AuthenticationResults.Authenticated -> {
+                    navController.navigate(Graphs.MainGraph.graphName)
+                }
+                is AuthenticationResults.BadLoginData -> {
+                    username.value = ""
+                    password.value = ""
+                }
+                is AuthenticationResults.BadRequest -> TODO()
+                is AuthenticationResults.Loading -> {
+                    enabled = false
+                }
+                is AuthenticationResults.TimeOutError -> {
+                    Toast.makeText(context, "Connection Error, try again", Toast.LENGTH_LONG).show()
+                    enabled = true
+                }
+                is AuthenticationResults.UnAuthenticated -> {}
+            }
+        }
+    }
+
 
 
     Surface(
@@ -84,7 +132,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .fillMaxWidth(),
-                    painter = painterResource(id = if(darkTheme) R.drawable.collective_chronicles_logo_transparent else R.drawable.collective_chronicles_logo_black_transparent),
+                    painter = painterResource(id = if (darkTheme) R.drawable.collective_chronicles_logo_transparent else R.drawable.collective_chronicles_logo_black_transparent),
                     contentDescription = "Site Logo"
                 )
             }
@@ -101,7 +149,13 @@ fun LoginScreen(
                     usernameCharactersOnly = true,
                     maxCharacters = 20,
                     imeAction = ImeAction.Go,
-                    keyboardActions = KeyboardActions(onGo = { /*TODO*/ })
+                    keyboardActions = KeyboardActions(onGo = {
+                        login(
+                            username = username,
+                            password = password,
+                            viewmodel
+                        )
+                    })
                 ) {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
@@ -128,8 +182,23 @@ fun LoginScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { /*TODO*/ }) {
-                    Text(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),text = "Login", style = MaterialTheme.typography.bodyMedium)
+                    colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    enabled = enabled,
+                    onClick = { login(username = username, password = password, viewmodel) }
+                ) {
+                    Text(
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                        text = "Login",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                if(!enabled){
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Bottom) {
@@ -152,4 +221,17 @@ fun LoginScreen(
 @Composable
 fun PreviewLoginScreen() {
     LoginScreen(navController = NavController(LocalContext.current))
+}
+
+private fun login(
+    username: MutableState<String>,
+    password: MutableState<String>,
+    loginViewModel: LoginViewModel
+) {
+    loginViewModel.login(
+        AuthenticationRequest(
+            username = username.value,
+            password = password.value
+        )
+    )
 }
