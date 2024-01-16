@@ -1,37 +1,28 @@
 package com.michaelrichards.collectivechronicles.screens.loginScreen
 
 import android.widget.Toast
-import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,8 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,7 +50,6 @@ import com.michaelrichards.collectivechronicles.components.AuthTextField
 import com.michaelrichards.collectivechronicles.dtos.requests.AuthenticationRequest
 import com.michaelrichards.collectivechronicles.navigation.Graphs
 import com.michaelrichards.collectivechronicles.navigation.Screens
-import com.michaelrichards.collectivechronicles.repositories.results.ApiSuccessFailState
 import com.michaelrichards.collectivechronicles.repositories.results.AuthenticationResults
 
 
@@ -96,25 +86,38 @@ fun LoginScreen(
         viewmodel.authResults.collect {
             when (it) {
                 is AuthenticationResults.Authenticated -> {
-                    navController.navigate(Graphs.MainGraph.graphName)
+                    navController.navigate(Graphs.MainGraph.graphName){
+                        popUpTo(Graphs.AuthGraph.graphName){
+                            inclusive = true
+                        }
+                    }
                 }
 
-                is AuthenticationResults.BadLoginData -> {
+                is AuthenticationResults.BadAuthenticationData -> {
+                    error = true
                     username.value = ""
                     password.value = ""
+                    Toast.makeText(
+                        context,
+                        R.string.incorrect_username_or_password,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    enabled = true
                 }
 
-                is AuthenticationResults.BadRequest -> TODO()
                 is AuthenticationResults.Loading -> {
                     enabled = false
                 }
 
                 is AuthenticationResults.TimeOutError -> {
-                    Toast.makeText(context, "Connection Error, try again", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, R.string.connection_error, Toast.LENGTH_LONG).show()
                     enabled = true
                 }
 
-                is AuthenticationResults.UnAuthenticated -> {}
+                is AuthenticationResults.UnknownError -> {
+                    Toast.makeText(context, R.string.something_went_wrong, Toast.LENGTH_LONG).show()
+                    enabled = true
+                }
             }
         }
     }
@@ -139,7 +142,7 @@ fun LoginScreen(
                         .fillMaxSize()
                         .fillMaxWidth(),
                     painter = painterResource(id = if (darkTheme) R.drawable.collective_chronicles_logo_transparent else R.drawable.collective_chronicles_logo_black_transparent),
-                    contentDescription = "Site Logo"
+                    contentDescription = stringResource(id = R.string.site_logo)
                 )
             }
             Column(
@@ -151,7 +154,8 @@ fun LoginScreen(
                 AuthTextField(
                     modifier = Modifier.fillMaxWidth(),
                     textValueState = username,
-                    label = "username",
+                    isError = error,
+                    label = stringResource(id = R.string.username),
                     usernameCharactersOnly = true,
                     maxCharacters = 20,
                     imeAction = ImeAction.Go,
@@ -164,10 +168,10 @@ fun LoginScreen(
                     })
                 ) {
 
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = null
-                        )
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = null
+                    )
 
 
                 }
@@ -177,7 +181,8 @@ fun LoginScreen(
                 AuthTextField(
                     modifier = Modifier.fillMaxWidth(),
                     textValueState = password,
-                    label = "password",
+                    label = stringResource(id = R.string.password),
+                    isError = error,
                     usernameCharactersOnly = true,
                     maxCharacters = 20,
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation()
@@ -186,7 +191,7 @@ fun LoginScreen(
                     Icon(
                         modifier = Modifier.clickable { showPassword = !showPassword },
                         imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = if (showPassword) "Hide Password" else "Show Password"
+                        contentDescription = stringResource(id = if (showPassword) R.string.hide_password else R.string.show_password)
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -200,7 +205,7 @@ fun LoginScreen(
                 ) {
                     Text(
                         modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                        text = "Login",
+                        text = stringResource(id = R.string.login),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -216,7 +221,7 @@ fun LoginScreen(
                     onClick = { navController.navigate(Screens.RegistrationScreen.routeName) }) {
                     Text(
                         modifier = Modifier.padding(8.dp),
-                        text = "Sign Up",
+                        text = stringResource(id = R.string.sign_up),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

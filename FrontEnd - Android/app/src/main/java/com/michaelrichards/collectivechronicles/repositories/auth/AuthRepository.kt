@@ -14,5 +14,5 @@ interface AuthRepository {
 
     suspend fun logout(): AuthenticationResults<String>
 
-    suspend fun refresh(): AuthenticationResults<Unit>
+    suspend fun refresh(): AuthenticationResults<String>
 }

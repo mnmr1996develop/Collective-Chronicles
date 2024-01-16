@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Collective Chronicles</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="hide_password">Hide Password</string>
+    <string name="show_password">Show Password</string>
+    <string name="connection_error">Connection Error</string>
+    <string name="incorrect_username_or_password">Incorrect Username or Password</string>
+    <string name="site_logo">Site Logo</string>
+    <string name="clear_text">Clear text</string>
+    <string name="bad_login">Bad Login</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="first_name">First name</string>
+    <string name="first_name_field">First name field</string>
+    <string name="last_name">Last name</string>
+    <string name="last_name_field">Last name field</string>
+    <string name="username">Username</string>
+    <string name="username_field">Username field</string>
+    <string name="password">Password</string>
+    <string name="password_field">Password field</string>
+    <string name="register">Register</string>
+    <string name="email">E-mail</string>
+    <string name="email_field">E-mail field</string>
 </resources>

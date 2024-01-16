@@ -23,10 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.michaelrichards.collectivechronicles.R
 
 
 @Composable
@@ -62,8 +64,8 @@ fun AuthTextField(
         isError = isError,
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
-            errorBorderColor = MaterialTheme.colorScheme.error,
-            errorLabelColor = MaterialTheme.colorScheme.onError
+            errorBorderColor = MaterialTheme.colorScheme.errorContainer,
+            errorLabelColor = MaterialTheme.colorScheme.error,
         ),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
         keyboardActions = keyboardActions,
@@ -78,7 +80,7 @@ fun AuthTextField(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Clear,
-                            contentDescription = null,
+                            contentDescription = stringResource(id = R.string.clear_text),
                             modifier = Modifier
                                 .size(15.dp))
                     }
