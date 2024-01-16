@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -25,10 +26,10 @@ class AuthController(
         @RequestBody registerRequest: RegisterRequest
     ) : ResponseEntity<AuthenticationResponse> = ResponseEntity.ok(authenticationService.register(registerRequest))
 
-    @PostMapping("/authenticate")
-    fun authenticate(
+    @PostMapping("/login")
+    fun login(
         @RequestBody registerRequest: AuthenticateRequest
-    ) : ResponseEntity<AuthenticationResponse> = ResponseEntity.ok(authenticationService.authenticate(registerRequest))
+    ) : ResponseEntity<AuthenticationResponse> = ResponseEntity.ok(authenticationService.login(registerRequest))
 
     @PostMapping("/refresh-token")
     fun refreshToken(
@@ -36,5 +37,9 @@ class AuthController(
         response: HttpServletResponse
     ) = authenticationService.refreshToken(request, response)
 
+    @PostMapping("/authenticate")
+    fun login(
+        @RequestHeader("Authorization") authToken: String
+    ) : ResponseEntity<Unit> = ResponseEntity.ok(authenticationService.authenticateToken(authToken))
 
 }

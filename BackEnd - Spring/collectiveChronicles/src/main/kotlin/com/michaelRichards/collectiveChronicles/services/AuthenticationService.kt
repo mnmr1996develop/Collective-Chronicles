@@ -9,6 +9,7 @@ import com.michaelRichards.collectiveChronicles.models.Token
 import com.michaelRichards.collectiveChronicles.models.User
 import com.michaelRichards.collectiveChronicles.repositories.TokenRepository
 import com.michaelRichards.collectiveChronicles.repositories.UserRepository
+import io.jsonwebtoken.security.InvalidKeyException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
@@ -24,6 +25,7 @@ class AuthenticationService(
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JWTService,
     private val tokenRepository: TokenRepository,
+    private val tokenService: TokenService,
     private val authenticationManager: AuthenticationManager
 ) {
 
@@ -49,7 +51,7 @@ class AuthenticationService(
         return AuthenticationResponse(accessToken = jwtToken, refreshToken = refreshToken)
     }
 
-    fun authenticate(authenticationRequest: AuthenticateRequest): AuthenticationResponse {
+    fun login(authenticationRequest: AuthenticateRequest): AuthenticationResponse {
         authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(
                 authenticationRequest.username,
@@ -62,8 +64,7 @@ class AuthenticationService(
 
         val jwtToken = jwtService.generateToken(userDetails = user)
         val refreshToken = jwtService.generateRefreshToken(user)
-
-        revokeAllTokens(user)
+        //revokeAllTokens(user)
         saveUserToken(user, jwtToken)
 
         return AuthenticationResponse(accessToken = jwtToken, refreshToken = refreshToken)
@@ -118,4 +119,13 @@ class AuthenticationService(
             }
         }
     }
+
+
+
+    fun authenticateToken(jwtToken: String){
+
+        if (!tokenService.findToken(jwtToken).isTokenValid()) throw InvalidKeyException("Token not valid")
+    }
+
+
 }
