@@ -19,7 +19,7 @@ fun UserNavigation() {
 
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Graphs.AuthGraph.graphName){
+    NavHost(navController = navController, startDestination = Graphs.SplashGraph.graphName){
 
         navigation(
             route = Graphs.SplashGraph.graphName,

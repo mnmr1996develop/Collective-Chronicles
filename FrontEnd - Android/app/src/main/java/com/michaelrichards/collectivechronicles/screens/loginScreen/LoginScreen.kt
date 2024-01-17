@@ -93,7 +93,7 @@ fun LoginScreen(
                     }
                 }
 
-                is AuthenticationResults.BadAuthenticationData -> {
+                is AuthenticationResults.Unauthenticated -> {
                     error = true
                     username.value = ""
                     password.value = ""

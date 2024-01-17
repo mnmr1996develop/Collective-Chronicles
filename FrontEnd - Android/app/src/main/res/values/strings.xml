@@ -21,4 +21,5 @@
     <string name="register">Register</string>
     <string name="email">E-mail</string>
     <string name="email_field">E-mail field</string>
+    <string name="try_again">Try again</string>
 </resources>

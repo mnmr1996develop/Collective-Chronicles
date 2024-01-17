@@ -3,10 +3,8 @@ package com.michaelrichards.collectivechronicles.screens.registrationScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -64,7 +62,7 @@ fun RegistrationScreen(
 
                 }
 
-                is AuthenticationResults.BadAuthenticationData -> TODO()
+                is AuthenticationResults.Unauthenticated -> TODO()
                 is AuthenticationResults.Loading -> TODO()
                 is AuthenticationResults.TimeOutError -> TODO()
                 is AuthenticationResults.UnknownError -> TODO()

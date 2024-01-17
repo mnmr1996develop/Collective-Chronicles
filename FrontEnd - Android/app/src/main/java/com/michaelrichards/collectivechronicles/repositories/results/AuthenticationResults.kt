@@ -4,9 +4,9 @@ sealed class AuthenticationResults<T> (val data: T? = null, val error: Exception
 
     class Authenticated<T>(data: T? = null ): AuthenticationResults<T>(data)
 
-    class TimeOutError<T>(data: T): AuthenticationResults<T>(data = data)
+    class TimeOutError<T>(): AuthenticationResults<T>()
 
-    class BadAuthenticationData<T>(data: T? = null): AuthenticationResults<T>(data = data)
+    class Unauthenticated<T>(data: T? = null): AuthenticationResults<T>(data = data)
 
     class UnknownError<T>(error: Exception? = null): AuthenticationResults<T>(error = error)
     class Loading<T>(): AuthenticationResults<T>()
