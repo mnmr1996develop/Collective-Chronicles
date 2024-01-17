@@ -24,9 +24,6 @@ class JWTService(
     private val jwtRefreshExpiration: Long,
 ) {
 
-    companion object {
-        const val JWT_REFRESH_EXPIRATION = 604800000L
-    }
 
 
     fun extractUsername(token: String): String {

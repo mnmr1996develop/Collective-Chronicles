@@ -13,6 +13,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
+
+
 @Component
 class JWTAuthenticationFilter(
     private val jwtService: JWTService,
@@ -20,13 +22,18 @@ class JWTAuthenticationFilter(
     private val tokenRepository: TokenRepository
 ): OncePerRequestFilter() {
 
+    companion object {
+        private const val AUTHORIZATION = "Authorization"
+        private const val BEARER = "Bearer "
+    }
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val authHeader = request.getHeader("Authorization")
-        if (authHeader.isNullOrEmpty() || !authHeader.startsWith("Bearer ")) {
+        val authHeader = request.getHeader(AUTHORIZATION)
+        if (authHeader.isNullOrEmpty() || !authHeader.startsWith(BEARER)) {
             filterChain.doFilter(request, response)
             return
         }
