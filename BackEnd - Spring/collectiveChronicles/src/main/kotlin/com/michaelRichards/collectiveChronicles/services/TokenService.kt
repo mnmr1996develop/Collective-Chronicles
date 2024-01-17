@@ -16,4 +16,5 @@ class TokenService(
 
     fun extractBearerToken(token : String) = if (!token.startsWith("Bearer ")) throw InvalidKeyException("Must be bearer token") else token.removePrefix("Bearer ")
 
+
 }

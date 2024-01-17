@@ -15,7 +15,8 @@ import kotlin.random.Random
 @Service
 @Transactional
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val jwtService: JWTService
 ) : UserDetailsService {
 
     override fun loadUserByUsername(username: String?): UserDetails =
@@ -28,6 +29,8 @@ class UserService(
         }
         return userRepository.save(user)
     }
+
+    fun findUserByBearerToken(bearerToken: String) = findByUsername(jwtService.extractUsername(bearerToken.removePrefix("Bearer ")))
 
     fun nullableFindByUsername(username: String): User? = userRepository.findByUsernameIgnoreCase(username)
 
