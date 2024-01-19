@@ -2,9 +2,8 @@ package com.michaelRichards.collectiveChronicles.controllers
 
 import com.michaelRichards.collectiveChronicles.dtos.requests.FullStoryRequest
 import com.michaelRichards.collectiveChronicles.dtos.requests.StoryPieceRequest
-import com.michaelRichards.collectiveChronicles.dtos.responses.FullStoryResponse
-import com.michaelRichards.collectiveChronicles.dtos.responses.StoryPieceResponse
-import com.michaelRichards.collectiveChronicles.models.StoryPiece
+import com.michaelRichards.collectiveChronicles.dtos.responses.OwnerStoryResponse
+import com.michaelRichards.collectiveChronicles.dtos.responses.PublicStoryResponse
 import com.michaelRichards.collectiveChronicles.services.StoryService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -31,7 +30,7 @@ class StoryController(
     fun startStory(
         @RequestHeader(AUTHORIZATION) bearerToken: String,
         @RequestBody fullStoryRequest: FullStoryRequest
-    ): ResponseEntity<FullStoryResponse> =
+    ): ResponseEntity<PublicStoryResponse> =
         ResponseEntity.created(URI(BASE_PATH)).body(storyService.createStory(bearerToken, fullStoryRequest))
 
 
@@ -39,8 +38,25 @@ class StoryController(
     fun getFullStory(
         @RequestHeader(AUTHORIZATION) bearerToken: String,
         @PathVariable("storyId") storyId: Long
-    ): ResponseEntity<FullStoryResponse> =
-        ResponseEntity.ok(storyService.getFullStory(bearerToken,storyId))
+    ): ResponseEntity<PublicStoryResponse> =
+        ResponseEntity.ok(storyService.getPublicFullStory(bearerToken,storyId))
+
+
+    @GetMapping("{storyId}/fullStoryData")
+    fun getFullStoryData(
+        @RequestHeader(AUTHORIZATION) bearerToken: String,
+        @PathVariable("storyId") storyId: Long
+    ): ResponseEntity<OwnerStoryResponse> =
+        ResponseEntity.ok(storyService.getOwnerFullStory(bearerToken,storyId))
+
+    @PostMapping("{storyId}/swap")
+    fun swapStoryPieces(
+        @RequestHeader(AUTHORIZATION) bearerToken: String,
+        @PathVariable("storyId") storyId: Long,
+        @RequestParam("storyPiecePlace1") storyPiecePlace1: Int,
+        @RequestParam("storyPiecePlace2") storyPiecePlace2: Int
+    ): ResponseEntity<PublicStoryResponse> =
+        ResponseEntity.ok(storyService.swapStoryOrder(bearerToken,storyId, storyPiecePlace1, storyPiecePlace2))
 
     @DeleteMapping("{storyId}")
     fun deleteStory(

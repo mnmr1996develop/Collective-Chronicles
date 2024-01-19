@@ -1,6 +1,7 @@
 package com.michaelRichards.collectiveChronicles.models
 
 import jakarta.persistence.*
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -54,11 +55,12 @@ class User(
 
 
 
-    @OneToMany(mappedBy = "storyOwner", orphanRemoval = true)
-    val ownedStories: MutableSet<FullStory> = mutableSetOf()
+    @OneToMany(mappedBy = "storyOwner", orphanRemoval = true, cascade = [CascadeType.ALL])
+    val ownedStories: MutableList<FullStory> = mutableListOf()
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true)
-    val storyPieces: MutableSet<StoryPiece> = mutableSetOf()
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = [CascadeType.ALL])
+    val storyPieces: MutableList<StoryPiece> = mutableListOf()
+
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf(
         SimpleGrantedAuthority(role.name)
@@ -80,10 +82,28 @@ class User(
     fun setIsAccountNonLocked(isAccountNonLocked: Boolean) {
         this.isAccountNonLocked = isAccountNonLocked
     }
-
     override fun isCredentialsNonExpired(): Boolean = this.isCredentialsNonExpired
 
     override fun isEnabled(): Boolean = this.isEnabled
+
+    fun addOwnedStory(fullStory: FullStory){
+        if(ownedStories.contains(fullStory))
+            throw DuplicateKeyException("")
+        ownedStories.add(fullStory)
+    }
+
+    fun removeOwnedStory(fullStory: FullStory) : Boolean = ownedStories.remove(fullStory)
+
+
+    fun addStoryPiece(storyPiece: StoryPiece){
+        if(storyPieces.contains(storyPiece))
+            throw DuplicateKeyException("")
+        storyPieces.add(storyPiece)
+    }
+
+    fun removeStoryPiece(storyPiece: StoryPiece) : Boolean = storyPieces.remove(storyPiece)
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

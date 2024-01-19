@@ -24,12 +24,11 @@ class StoryPiece(
     @JoinColumn(name = "user_id")
     val user: User? = null,
 
-    @ManyToOne
-    @JsonIgnore
+    @ManyToOne(cascade = [CascadeType.REFRESH, CascadeType.DETACH])
     @JoinColumn(name = "full_story_id")
     val fullStory: FullStory? = null
-
 ) {
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

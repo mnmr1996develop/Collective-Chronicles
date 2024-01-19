@@ -66,4 +66,41 @@ class ApiExceptionHandler {
         return ResponseEntity(apiException, httpStatus)
     }
 
+    @ExceptionHandler(value = [IndexOutOfBoundsException::class])
+    fun handleIndexOutOfBoundsException(exception: IndexOutOfBoundsException): ResponseEntity<Any> {
+        val httpStatus = HttpStatus.BAD_REQUEST
+        val apiException = APIException(
+            httpStatus,
+            "index out of bounds",
+            LocalDateTime.now()
+        )
+        return ResponseEntity(apiException, httpStatus)
+    }
+
+    @ExceptionHandler(value = [CustomExceptions.UnAuthorizedAction::class])
+    fun handleUnAuthorizedActionException(exception: CustomExceptions.UnAuthorizedAction): ResponseEntity<Any> {
+        val httpStatus = HttpStatus.UNAUTHORIZED
+        val apiException = exception.message?.let {
+            APIException(
+                httpStatus,
+                it,
+                LocalDateTime.now()
+            )
+        }
+        return ResponseEntity(apiException, httpStatus)
+    }
+
+    @ExceptionHandler(value = [CustomExceptions.IndexOutOfBound::class])
+    fun handleCustomIndexOutOfBounds(exception: CustomExceptions.IndexOutOfBound): ResponseEntity<Any> {
+        val httpStatus = HttpStatus.BAD_REQUEST
+        val apiException = exception.message?.let {
+            APIException(
+                httpStatus,
+                it,
+                LocalDateTime.now()
+            )
+        }
+        return ResponseEntity(apiException, httpStatus)
+    }
+
 }

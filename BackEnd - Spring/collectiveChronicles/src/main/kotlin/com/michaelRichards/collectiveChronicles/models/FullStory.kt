@@ -27,25 +27,25 @@ class FullStory(
 
 ) {
 
+    @OneToMany(mappedBy = "fullStory", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val canon: MutableList<StoryPiece> = mutableListOf()
 
-    @OneToMany(mappedBy = "fullStory", cascade = [CascadeType.REMOVE, CascadeType.REFRESH], orphanRemoval = true)
-    val potentialPieces: MutableSet<StoryPiece> = mutableSetOf()
+    @OneToMany(mappedBy = "fullStory", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val potentialPieces: MutableList<StoryPiece> = mutableListOf()
+
 
     fun addPotentialPiece(storyPiece: StoryPiece){
         potentialPieces.add(storyPiece)
     }
 
 
-    @OneToMany(orphanRemoval = true)
-    @JoinColumn(name = "full_story_id")
-    val canon: MutableList<StoryPiece> = mutableListOf()
+
 
     fun addToCanon(storyPiece: StoryPiece){
         if (potentialPieces.contains(storyPiece)){
             potentialPieces.remove(storyPiece)
-            canon.add(storyPiece)
         }
-
+        canon.add(storyPiece)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -79,6 +79,7 @@ class FullStory(
     override fun toString(): String {
         return "FullStory(id=$id, title='$title', topic='$topic', isStoryOpen=$isStoryOpen, storyOwner=$storyOwner, storyStarted=$storyStarted, storyLastEdited=$storyLastEdited)"
     }
+
 
 
 }

@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import kotlin.random.Random
 
 @Service
 @Transactional
@@ -30,7 +29,9 @@ class UserService(
         return userRepository.save(user)
     }
 
-    fun findUserByBearerToken(bearerToken: String) = findByUsername(jwtService.extractUsername(bearerToken.removePrefix("Bearer ")))
+    fun findUserByBearerToken(bearerToken: String) = findByUsername(extractUsernameFromBearerToken(bearerToken))
+
+    fun extractUsernameFromBearerToken(bearerToken: String) = jwtService.extractUsername(bearerToken.removePrefix("Bearer "))
 
     fun nullableFindByUsername(username: String): User? = userRepository.findByUsernameIgnoreCase(username)
 
@@ -78,4 +79,13 @@ class UserService(
             username = user.username,
             birthday = user.birthday!!,
     )
+
+    fun deleteByUsername(username: String){
+        val user = findByUsername(username)
+        userRepository.save(user)
+    }
+
+    fun deleteUserByToken(jwtToken: String) = deleteByUsername(extractUsernameFromBearerToken(bearerToken = jwtToken))
+
+
 }
