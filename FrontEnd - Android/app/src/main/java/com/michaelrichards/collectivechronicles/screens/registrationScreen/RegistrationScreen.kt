@@ -173,7 +173,7 @@ fun RegistrationScreen(
                     label = stringResource(id = R.string.username),
                     maxCharacters = 20,
                     isError = usernameError,
-                    onlyLetters = true,
+                    usernameCharactersOnly = true,
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
                 ) {
@@ -191,7 +191,6 @@ fun RegistrationScreen(
                     label = stringResource(id = R.string.email),
                     maxCharacters = 20,
                     isError = emailError,
-                    onlyLetters = true,
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
                 ) {
@@ -209,7 +208,6 @@ fun RegistrationScreen(
                     label = stringResource(id = R.string.password),
                     maxCharacters = 20,
                     isError = passwordError,
-                    onlyLetters = true,
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next,
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation()

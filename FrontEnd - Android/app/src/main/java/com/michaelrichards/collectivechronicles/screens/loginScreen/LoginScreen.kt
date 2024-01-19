@@ -157,15 +157,7 @@ fun LoginScreen(
                     isError = error,
                     label = stringResource(id = R.string.username),
                     usernameCharactersOnly = true,
-                    maxCharacters = 20,
-                    imeAction = ImeAction.Go,
-                    keyboardActions = KeyboardActions(onGo = {
-                        login(
-                            username = username,
-                            password = password,
-                            viewmodel
-                        )
-                    })
+                    maxCharacters = 20
                 ) {
 
                     Icon(
@@ -183,9 +175,16 @@ fun LoginScreen(
                     textValueState = password,
                     label = stringResource(id = R.string.password),
                     isError = error,
-                    usernameCharactersOnly = true,
                     maxCharacters = 20,
-                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation()
+                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                    imeAction = ImeAction.Next,
+                    keyboardActions = KeyboardActions(onNext = {
+                        login(
+                            username = username,
+                            password = password,
+                            viewmodel
+                        )
+                    })
                 ) {
 
                     Icon(

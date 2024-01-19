@@ -37,7 +37,7 @@ fun AuthTextField(
     textValueState: MutableState<String>,
     label: String,
     onlyLetters: Boolean = false,
-    usernameCharactersOnly: Boolean = true,
+    usernameCharactersOnly: Boolean = false,
     maxCharacters: Int,
     enabled: Boolean = true,
     isError: Boolean = false,
@@ -54,9 +54,9 @@ fun AuthTextField(
         onValueChange = {
             if (it.length <= maxCharacters) {
                 textValueState.value =
-                    if (usernameCharactersOnly) it.usernameCharacters()
-                    else if (onlyLetters) it.letters()
-                    else it.trim()
+                    if (!usernameCharactersOnly && !onlyLetters ) it.trim()
+                    else if (usernameCharactersOnly) it.usernameCharacters()
+                    else it.letters()
             }
         },
         label = { Text(text = label, style = MaterialTheme.typography.labelMedium) },
