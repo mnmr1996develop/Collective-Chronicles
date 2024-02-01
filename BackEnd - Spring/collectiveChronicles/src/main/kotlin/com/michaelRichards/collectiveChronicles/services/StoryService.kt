@@ -5,12 +5,14 @@ import com.michaelRichards.collectiveChronicles.dtos.requests.StoryPieceRequest
 import com.michaelRichards.collectiveChronicles.dtos.responses.OwnerStoryResponse
 import com.michaelRichards.collectiveChronicles.dtos.responses.PublicStoryResponse
 import com.michaelRichards.collectiveChronicles.dtos.responses.StoryPieceResponse
-import com.michaelRichards.collectiveChronicles.exceptions.CustomExceptions
+import com.michaelRichards.collectiveChronicles.exceptions.authorizationExceptions.AuthorizationExceptions
+import com.michaelRichards.collectiveChronicles.exceptions.storyExceptions.StoryExceptions
 import com.michaelRichards.collectiveChronicles.models.FullStory
 import com.michaelRichards.collectiveChronicles.models.StoryPiece
 import com.michaelRichards.collectiveChronicles.models.User
 import com.michaelRichards.collectiveChronicles.repositories.FullStoryRepository
 import com.michaelRichards.collectiveChronicles.repositories.StoryPieceRepository
+import com.michaelRichards.collectiveChronicles.utils.Variables
 import jakarta.transaction.Transactional
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.data.domain.PageRequest
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import kotlin.math.max
 
 @Service
 @Transactional
@@ -27,8 +30,11 @@ class StoryService(
     private val storyPieceRepository: StoryPieceRepository
 ) {
 
-    fun findStoryById(id: Long): FullStory = fullStoryRepository.findById(id).orElseThrow { NotFoundException() }
-    fun findPieceById(id: Long): StoryPiece = storyPieceRepository.findById(id).orElseThrow { NotFoundException() }
+    fun findStoryById(id: Long): FullStory =
+        fullStoryRepository.findById(id).orElseThrow { StoryExceptions.NotFoundException("$id not found") }
+
+    fun findPieceById(id: Long): StoryPiece =
+        storyPieceRepository.findById(id).orElseThrow { StoryExceptions.NotFoundException("$id not found") }
 
     fun getPublicFullStory(bearerToken: String, storyId: Long): PublicStoryResponse {
         val story = findStoryById(storyId)
@@ -45,26 +51,28 @@ class StoryService(
 
     fun getUserStories(
         jwtToken: String,
-        pageNumber: Int?,
-        pageSize: Int?,
+        pageNumber: Int? = null,
+        pageSize: Int? = null,
         isAscending: Boolean?
     ): List<OwnerStoryResponse> {
         val user = userService.findUserByBearerToken(jwtToken)
 
         val stories =
-            if (pageNumber == null || pageSize == null) fullStoryRepository.findByStoryOwnerOrderByStoryLastEditedDesc(
+            if (pageNumber == null || pageSize == null) fullStoryRepository.findByStoryOwnerOrderByLastEditedDesc(
                 user
             ) else {
-                if (pageNumber < 0 ) throw CustomExceptions.IndexOutOfBound(pageNumber, "pageNumber")
-                if (pageSize < 1 || pageSize > 100) throw CustomExceptions.IndexOutOfBound(pageSize, "pageSize")
+                if (pageNumber < 0) throw StoryExceptions.IndexOutOfBound(pageNumber, Variables.PAGE_NUMBER)
+                if (pageSize < 1 || pageSize > 100) throw StoryExceptions.IndexOutOfBound(pageSize, Variables.PAGE_SIZE)
 
                 val pageable: Pageable =
                     if (isAscending == null)
                         PageRequest.of(pageNumber, pageSize)
                     else
-                        PageRequest.of(pageNumber, pageSize,
-                        if (isAscending) Sort.by("storyLastEdited").ascending() else Sort.by("storyLastEdited").descending()
-                    )
+                        PageRequest.of(
+                            pageNumber, pageSize,
+                            if (isAscending) Sort.by(Variables.LAST_EDITED)
+                                .ascending() else Sort.by(Variables.LAST_EDITED).descending()
+                        )
                 fullStoryRepository.findByStoryOwner(user, pageable)
             }
         return stories.map { fullStory: FullStory -> mapOwnerStoryToDTO(fullStory, user) }
@@ -80,13 +88,12 @@ class StoryService(
         val story = findStoryById(storyId)
         val user = userService.findUserByBearerToken(bearerToken)
 
-        println("size of story ${story.canon.size}")
-
         if (pieceId1 < story.canon.size && pieceId2 < story.canon.size) {
             story.canon.swap(pieceId1, pieceId2)
             fullStoryRepository.save(story)
         } else {
-            throw IndexOutOfBoundsException()
+            val variableName = if (pieceId1 > pieceId2) "pieceId1" else "pieceId2"
+            throw StoryExceptions.IndexOutOfBound(index = max(pieceId1, pieceId2), variableName)
         }
         /* if (story.storyOwner != user){
              throw Exception()
@@ -124,17 +131,17 @@ class StoryService(
     private fun mapPublicStoryToDto(fullStory: FullStory, user: User) = PublicStoryResponse(
         storyId = fullStory.id!!,
         isStoryOpen = fullStory.isStoryOpen,
-        storyLastEdited = fullStory.storyLastEdited!!,
+        storyLastEdited = fullStory.lastEdited!!,
         storyOwner = fullStory.storyOwner!!.username,
         canon = fullStory.canon.map { storyPiece -> mapStoryPieceToDto(storyPiece, user) },
-        storyStarted = fullStory.storyStarted!!,
+        storyStarted = fullStory.created!!,
         title = fullStory.title,
         topic = fullStory.topic,
         isCallerOwner = user == fullStory.storyOwner
     )
 
     private fun mapOwnerStoryToDTO(fullStory: FullStory, user: User): OwnerStoryResponse {
-        if (fullStory.storyOwner != user) throw CustomExceptions.UnAuthorizedAction("Unauthorized User Action")
+        if (fullStory.storyOwner != user) throw AuthorizationExceptions.UnAuthorizedAction("Unauthorized User Action")
 
         return OwnerStoryResponse(
             storyId = fullStory.id!!,
@@ -150,8 +157,8 @@ class StoryService(
             storyOwner = fullStory.storyOwner.username,
             isCallerOwner = true,
             isStoryOpen = fullStory.isStoryOpen,
-            storyEdited = fullStory.storyLastEdited!!,
-            storyStarted = fullStory.storyStarted!!
+            storyEdited = fullStory.lastEdited!!,
+            storyStarted = fullStory.created!!
         )
     }
 
@@ -169,8 +176,8 @@ class StoryService(
         topic = fullStoryRequest.topic.trim(),
         storyOwner = user,
         isStoryOpen = fullStoryRequest.isStoryOpen,
-        storyStarted = LocalDateTime.now(),
-        storyLastEdited = LocalDateTime.now()
+        created = LocalDateTime.now(),
+        lastEdited = LocalDateTime.now()
     )
 
     private fun mapNewStoryPieceRequestToFullStory(
@@ -192,7 +199,7 @@ class StoryService(
 
         if (user == fullStory.storyOwner) {
             fullStory.addToCanon(storyPiece)
-            fullStory.storyLastEdited = LocalDateTime.now()
+            fullStory.lastEdited = LocalDateTime.now()
         } else {
             fullStory.addPotentialPiece(storyPiece)
         }

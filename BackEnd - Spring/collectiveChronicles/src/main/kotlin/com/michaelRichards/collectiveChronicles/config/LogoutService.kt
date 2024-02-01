@@ -1,6 +1,7 @@
 package com.michaelRichards.collectiveChronicles.config
 
 import com.michaelRichards.collectiveChronicles.repositories.TokenRepository
+import com.michaelRichards.collectiveChronicles.utils.Variables
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
@@ -13,8 +14,8 @@ class LogoutService(
 ) : LogoutHandler{
 
     override fun logout(request: HttpServletRequest?, response: HttpServletResponse?, authentication: Authentication?) {
-        val authHeader = request?.getHeader("Authorization")
-        if (authHeader.isNullOrEmpty() || !authHeader.startsWith("Bearer ")) {
+        val authHeader = request?.getHeader(Variables.AUTHORIZATION)
+        if (authHeader.isNullOrEmpty() || !authHeader.startsWith(Variables.BEARER)) {
 
             return
         }

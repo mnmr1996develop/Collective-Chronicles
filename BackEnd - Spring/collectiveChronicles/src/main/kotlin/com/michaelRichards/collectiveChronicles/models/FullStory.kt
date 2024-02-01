@@ -1,6 +1,8 @@
 package com.michaelRichards.collectiveChronicles.models
 
+import com.michaelRichards.collectiveChronicles.exceptions.storyExceptions.StoryExceptions
 import jakarta.persistence.*
+import org.hibernate.validator.constraints.Length
 import java.time.LocalDateTime
 
 @Entity
@@ -11,19 +13,23 @@ class FullStory(
     @Column(name = "id", nullable = false)
     val id: Long? = null,
 
+    @Length(min = 3, max = 100)
     val title: String = "",
 
+    @Length(min = 3, max = 100)
     var topic: String = "",
 
     var isStoryOpen: Boolean = true,
+
+    var maxStories: Int? = 20,
 
     @ManyToOne
     @JoinColumn(name = "story_owner_id")
     val storyOwner: User? = null,
 
-    val storyStarted: LocalDateTime? = null,
+    val created: LocalDateTime? = null,
 
-    var storyLastEdited: LocalDateTime? = null
+    var lastEdited: LocalDateTime? = null
 
 ) {
 
@@ -45,7 +51,14 @@ class FullStory(
         if (potentialPieces.contains(storyPiece)){
             potentialPieces.remove(storyPiece)
         }
-        canon.add(storyPiece)
+        maxStories?.let { max ->
+            if (canon.size < max){
+                canon.add(storyPiece)
+            }
+            else throw StoryExceptions.MaxStoriesReached(storiesInCanon = max, this.title)
+        } ?: kotlin.run {
+            canon.add(storyPiece)
+        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -59,8 +72,8 @@ class FullStory(
         if (topic != other.topic) return false
         if (isStoryOpen != other.isStoryOpen) return false
         if (storyOwner != other.storyOwner) return false
-        if (storyStarted != other.storyStarted) return false
-        if (storyLastEdited != other.storyLastEdited) return false
+        if (created != other.created) return false
+        if (lastEdited != other.lastEdited) return false
 
         return true
     }
@@ -71,13 +84,13 @@ class FullStory(
         result = 31 * result + topic.hashCode()
         result = 31 * result + isStoryOpen.hashCode()
         result = 31 * result + (storyOwner?.hashCode() ?: 0)
-        result = 31 * result + (storyStarted?.hashCode() ?: 0)
-        result = 31 * result + (storyLastEdited?.hashCode() ?: 0)
+        result = 31 * result + (created?.hashCode() ?: 0)
+        result = 31 * result + (lastEdited?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "FullStory(id=$id, title='$title', topic='$topic', isStoryOpen=$isStoryOpen, storyOwner=$storyOwner, storyStarted=$storyStarted, storyLastEdited=$storyLastEdited)"
+        return "FullStory(id=$id, title='$title', topic='$topic', isStoryOpen=$isStoryOpen, storyOwner=$storyOwner, storyStarted=$created, storyLastEdited=$lastEdited)"
     }
 
 

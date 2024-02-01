@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository
 interface FullStoryRepository: JpaRepository<FullStory, Long> {
 
 
-    fun findByStoryOwnerOrderByStoryLastEditedDesc(storyOwner: User): List<FullStory>
+    fun findByStoryOwnerOrderByLastEditedDesc(storyOwner: User): MutableList<FullStory>
+
 
 
     fun findByStoryOwner(storyOwner: User, pageable: Pageable): List<FullStory>

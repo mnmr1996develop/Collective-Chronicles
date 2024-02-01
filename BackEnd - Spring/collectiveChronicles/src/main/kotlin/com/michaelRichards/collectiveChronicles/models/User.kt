@@ -1,6 +1,9 @@
 package com.michaelRichards.collectiveChronicles.models
 
 import jakarta.persistence.*
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -18,18 +21,25 @@ class User(
     @Column(name = "id", nullable = false)
     val id: UUID? = null,
 
+
+    @field:NotBlank
     @Column(name = "first_name")
     var firstName: String = "",
 
+    @field:NotBlank
     @Column(name = "last_name")
     var lastName: String = "",
 
+    @field:NotBlank
     @Column(unique = true)
     private var username: String = "",
 
+    @field:Email
+    @field:NotBlank
     @Column(unique = true)
-    private var email: String = "",
+    var email: String = "",
 
+    @field:NotBlank
     @Column(name = "password")
     private var password: String = "",
 

@@ -4,6 +4,7 @@ import com.michaelRichards.collectiveChronicles.dtos.responses.AdminDetailRespon
 import com.michaelRichards.collectiveChronicles.dtos.responses.UserDetailsDTO
 import com.michaelRichards.collectiveChronicles.models.User
 import com.michaelRichards.collectiveChronicles.repositories.UserRepository
+import com.michaelRichards.collectiveChronicles.utils.Variables
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -31,9 +32,11 @@ class UserService(
 
     fun findUserByBearerToken(bearerToken: String) = findByUsername(extractUsernameFromBearerToken(bearerToken))
 
-    fun extractUsernameFromBearerToken(bearerToken: String) = jwtService.extractUsername(bearerToken.removePrefix("Bearer "))
+    fun extractUsernameFromBearerToken(bearerToken: String) = jwtService.extractUsername(bearerToken.removePrefix(Variables.BEARER))
 
     fun nullableFindByUsername(username: String): User? = userRepository.findByUsernameIgnoreCase(username)
+
+    fun nullableFindByEmail(email: String): User? = userRepository.findByEmailIgnoreCase(email)
 
     fun findByUsername(username: String): User =
         nullableFindByUsername(username) ?: throw UsernameNotFoundException("$username not found")
@@ -69,15 +72,15 @@ class UserService(
         )
     }
 
-    fun getAllUsers(): List<UserDetailsDTO> = userRepository.findAll().map { user: User -> userToUserDTO(user) }
+    fun getAllUsers(): List<UserDetailsDTO> = userRepository.findAll().map { user -> userToUserDTO(user) }
 
     fun userToUserDTO(user: User) : UserDetailsDTO =
         UserDetailsDTO(
-
             firstName = user.firstName,
             lastName = user.lastName,
             username = user.username,
             birthday = user.birthday!!,
+            accountCreated = user.accountCreatedAt!!
     )
 
     fun deleteByUsername(username: String){
@@ -86,6 +89,9 @@ class UserService(
     }
 
     fun deleteUserByToken(jwtToken: String) = deleteByUsername(extractUsernameFromBearerToken(bearerToken = jwtToken))
+    fun getUserDetails(jwtToken: String): UserDetailsDTO  = userToUserDTO(findUserByBearerToken(jwtToken))
+
+
 
 
 }

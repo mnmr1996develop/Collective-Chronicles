@@ -22,16 +22,15 @@ class UserController(
 ) {
 
     @GetMapping
-    fun getUserDetails(): ResponseEntity<List<UserDetailsDTO>> =
-        ResponseEntity.ok(userService.getAllUserDetails())
+    fun getUserDetails(
+        @RequestHeader(Variables.AUTHORIZATION) jwtToken: String
+    ): ResponseEntity<UserDetailsDTO> =
+        ResponseEntity.ok(userService.getUserDetails(jwtToken))
 
     @DeleteMapping
     fun deleteAccount(
         @RequestHeader(Variables.AUTHORIZATION) jwtToken: String
-    ): ResponseEntity<Boolean> {
-        userService.deleteUserByToken(jwtToken)
-        return ResponseEntity.ok(true)
-    }
+    ): ResponseEntity<Unit> = ResponseEntity.ok(userService.deleteUserByToken(jwtToken))
 
     @GetMapping("myStories")
     fun getMyStories(
@@ -40,12 +39,12 @@ class UserController(
         @RequestParam pageSize: Int? = null,
         @RequestParam isAscending: Boolean? = null
     ): ResponseEntity<List<OwnerStoryResponse>> =
-        ResponseEntity.ok().body(storyService.getUserStories(jwtToken, pageNumber, pageSize, isAscending ))
+        ResponseEntity.ok().body(storyService.getUserStories(jwtToken, pageNumber, pageSize, isAscending))
 
 
     @GetMapping("myStoryPieces")
     fun getMyStoryPieces(
         @RequestHeader(Variables.AUTHORIZATION) jwtToken: String,
-        ): ResponseEntity<List<StoryPieceResponse>> = ResponseEntity.ok().body(storyService.getUserStoryPieces(jwtToken))
+    ): ResponseEntity<List<StoryPieceResponse>> = ResponseEntity.ok().body(storyService.getUserStoryPieces(jwtToken))
 
 }

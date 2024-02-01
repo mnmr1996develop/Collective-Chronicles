@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.michaelRichards.collectiveChronicles.dtos.requests.AuthenticateRequest
 import com.michaelRichards.collectiveChronicles.dtos.requests.RegisterRequest
 import com.michaelRichards.collectiveChronicles.dtos.responses.AuthenticationResponse
+import com.michaelRichards.collectiveChronicles.exceptions.authorizationExceptions.AuthorizationExceptions
 import com.michaelRichards.collectiveChronicles.models.Role
 import com.michaelRichards.collectiveChronicles.models.Token
 import com.michaelRichards.collectiveChronicles.models.User
 import com.michaelRichards.collectiveChronicles.repositories.TokenRepository
 import com.michaelRichards.collectiveChronicles.repositories.UserRepository
+import com.michaelRichards.collectiveChronicles.utils.Variables
 import io.jsonwebtoken.security.InvalidKeyException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -18,6 +20,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 @Service
 class AuthenticationService(
@@ -26,6 +30,7 @@ class AuthenticationService(
     private val jwtService: JWTService,
     private val tokenRepository: TokenRepository,
     private val tokenService: TokenService,
+    private val userService: UserService,
     private val authenticationManager: AuthenticationManager
 ) {
 
@@ -40,6 +45,8 @@ class AuthenticationService(
             role = role
         )
 
+        verifyUser(user)
+
 
         val savedUser = repository.save(user)
         val jwtToken = jwtService.generateToken(userDetails = user)
@@ -50,6 +57,58 @@ class AuthenticationService(
 
         return AuthenticationResponse(accessToken = jwtToken, refreshToken = refreshToken)
     }
+
+    private fun verifyEmail(email: String) {
+        val user = userService.nullableFindByEmail(email)
+        if (user  != null){
+            throw AuthorizationExceptions.EmailTaken(email)
+        }
+    }
+
+    private fun verifyUser(user: User) {
+
+        verifyName(user.firstName)
+        verifyName(user.lastName)
+        verifyUsername(user.username)
+        verifyEmail(user.email)
+        user.birthday?.let { verifyAge(birthday = it) } ?: throw AuthorizationExceptions.UnAuthorizedAction("birthday isn't present")
+    }
+
+    private fun verifyName(name: String) {
+        if (name.length  > 20 || name.length < 2){
+            throw AuthorizationExceptions.InvalidName(name)
+        }
+    }
+
+    private fun verifyUsername(username: String){
+
+        if (username.length < 20){
+
+        }
+
+        val user = userService.nullableFindByUsername(username)
+        if (user != null)
+            throw AuthorizationExceptions.UsernameTaken(username)
+    }
+
+    private fun verifyAge(birthday: LocalDate){
+        val age = ChronoUnit.YEARS.between(birthday, LocalDate.now())
+
+        if (age < 13 || age > 150)
+            throw AuthorizationExceptions.InvalidAge(age.toInt())
+    }
+
+    private fun verifyPassword(password: String) {
+        if (!password.contains(Regex("[a-z]")))
+            throw AuthorizationExceptions.InvalidPassword("Password Must Contain Lowercase")
+        if (!password.contains(Regex("[A-Z]")))
+            throw AuthorizationExceptions.InvalidPassword("Password Must Contain Uppercase")
+        if (!password.contains(Regex("\\d")))
+            throw AuthorizationExceptions.InvalidPassword("Password Must Contain Number")
+        if (!password.contains(Regex("[@\$!%*#?&_]")))
+            throw AuthorizationExceptions.InvalidPassword("Password Must Contain Special Character")
+    }
+
 
     fun login(authenticationRequest: AuthenticateRequest): AuthenticationResponse {
         authenticationManager.authenticate(
@@ -98,7 +157,7 @@ class AuthenticationService(
 
         val authHeader = request.getHeader(HttpHeaders.AUTHORIZATION)
 
-        if (authHeader.isNullOrEmpty() || !authHeader.startsWith("Bearer ")) {
+        if (authHeader.isNullOrEmpty() || !authHeader.startsWith(Variables.BEARER)) {
             return
         }
         val refreshToken: String = authHeader.substring(7)

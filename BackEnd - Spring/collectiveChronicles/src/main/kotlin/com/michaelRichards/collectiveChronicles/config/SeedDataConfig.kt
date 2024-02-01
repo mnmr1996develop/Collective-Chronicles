@@ -12,6 +12,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.util.*
+import kotlin.math.log
 import kotlin.random.Random
 
 @Component
@@ -46,12 +47,14 @@ class SeedDataConfig(
             val isNameInEmail = Random.nextBoolean()
 
             var firstName = faker.name.firstName().filterNot { it.isWhitespace() }
-            var lastName = faker.name.lastName().filterNot { !it.isWhitespace() }
+            var lastName = faker.name.lastName().filterNot { it.isWhitespace() }
             var birthday = generateRandomBirthday()
             val email = if (isNameInEmail) faker.internet.email(name = "$firstName $lastName").filterNot { it.isWhitespace() } else faker.internet.email()
+
+
             while (userRepository.findByEmailIgnoreCase(email) != null){
                 firstName =  faker.name.firstName().filterNot { it.isWhitespace() }
-                lastName = faker.name.lastName().filterNot { !it.isWhitespace() }
+                lastName = faker.name.lastName().filterNot { it.isWhitespace() }
                 birthday = generateRandomBirthday()
                 if (isNameInEmail) faker.internet.email(name = "$firstName $lastName").filterNot { it.isWhitespace() } else faker.internet.email()
             }
