@@ -72,7 +72,7 @@ fun LoginScreen(
         mutableStateOf(false)
     }
 
-    var error by remember {
+    val error = remember {
         mutableStateOf(false)
     }
 
@@ -94,7 +94,7 @@ fun LoginScreen(
                 }
 
                 is AuthenticationResults.Unauthenticated -> {
-                    error = true
+                    error.value = true
                     username.value = ""
                     password.value = ""
                     Toast.makeText(

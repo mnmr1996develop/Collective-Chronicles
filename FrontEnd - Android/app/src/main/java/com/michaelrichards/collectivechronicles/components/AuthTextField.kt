@@ -21,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,7 +41,7 @@ fun AuthTextField(
     usernameCharactersOnly: Boolean = false,
     maxCharacters: Int,
     enabled: Boolean = true,
-    isError: Boolean = false,
+    isError: MutableState<Boolean> = mutableStateOf(false),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
@@ -52,6 +53,9 @@ fun AuthTextField(
         modifier = modifier,
         value = textValueState.value,
         onValueChange = {
+            if(isError.value){
+                isError.value = true
+            }
             if (it.length <= maxCharacters) {
                 textValueState.value =
                     if (!usernameCharactersOnly && !onlyLetters ) it.trim()
@@ -61,7 +65,7 @@ fun AuthTextField(
         },
         label = { Text(text = label, style = MaterialTheme.typography.labelMedium) },
         enabled = enabled,
-        isError = isError,
+        isError = isError.value,
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
             errorBorderColor = MaterialTheme.colorScheme.errorContainer,

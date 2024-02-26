@@ -1,5 +1,6 @@
 package com.michaelrichards.collectivechronicles.screens.registrationScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -42,6 +43,7 @@ import androidx.navigation.NavController
 import com.michaelrichards.collectivechronicles.R
 import com.michaelrichards.collectivechronicles.components.AuthTextField
 import com.michaelrichards.collectivechronicles.dtos.requests.RegistrationRequest
+import com.michaelrichards.collectivechronicles.navigation.Graphs
 import com.michaelrichards.collectivechronicles.repositories.results.AuthenticationResults
 import java.time.LocalDate
 
@@ -55,17 +57,74 @@ fun RegistrationScreen(
 
     val context = LocalContext.current
 
-    LaunchedEffect(viewmodel.authResults, context) {
-        viewmodel.authResults.collect {
-            when (it) {
-                is AuthenticationResults.Authenticated -> {
+    val firstNameError = remember {
+        mutableStateOf(false)
+    }
 
+    val lastNameError = remember {
+        mutableStateOf(false)
+    }
+
+    val usernameError = remember {
+        mutableStateOf(false)
+    }
+
+    val emailError = remember {
+        mutableStateOf(false)
+    }
+
+    val passwordError = remember {
+        mutableStateOf(false)
+    }
+
+    val birthdayError = remember {
+        mutableStateOf(false)
+    }
+
+
+    LaunchedEffect(viewmodel.authResults, context) {
+        viewmodel.authResults.collect {results ->
+            when (results) {
+                is AuthenticationResults.Authenticated -> {
+                    navController.navigate(Graphs.MainGraph.graphName){
+                        popUpTo(Graphs.AuthGraph.graphName){
+                            inclusive = true
+                        }
+                    }
                 }
 
-                is AuthenticationResults.Unauthenticated -> TODO()
-                is AuthenticationResults.Loading -> TODO()
-                is AuthenticationResults.TimeOutError -> TODO()
-                is AuthenticationResults.UnknownError -> TODO()
+                is AuthenticationResults.Unauthenticated -> {
+                    Toast.makeText(context, results.data, Toast.LENGTH_LONG).show()
+                    when(results.data){
+                        "firstName" -> {
+                            firstNameError.value = true
+                        }
+                        "lastName" -> {
+                            lastNameError.value = true
+                        }
+                        "username" -> {
+                            usernameError.value = true
+                        }
+                        "email" -> {
+                            emailError.value = true
+                        }
+                        "password" -> {
+                            passwordError.value = true
+                        }
+                        "birthday" -> {
+                            birthdayError.value = true
+                        }
+                    }
+                }
+                is AuthenticationResults.Loading -> {
+
+                }
+                is AuthenticationResults.TimeOutError -> {
+                   Toast.makeText(context, R.string.connection_error, Toast.LENGTH_LONG).show()
+                }
+                is AuthenticationResults.UnknownError -> {
+                    Toast.makeText(context, R.string.something_went_wrong, Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -74,45 +133,27 @@ fun RegistrationScreen(
         mutableStateOf("")
     }
 
-    var firstNameError by remember {
-        mutableStateOf(false)
-    }
-
     val lastName = rememberSaveable {
         mutableStateOf("")
-    }
-
-    var lastNameError by remember {
-        mutableStateOf(false)
     }
 
     val username = rememberSaveable {
         mutableStateOf("")
     }
 
-    var usernameError by remember {
-        mutableStateOf(false)
-    }
-
     val email = rememberSaveable {
         mutableStateOf("")
-    }
-
-    var emailError by remember {
-        mutableStateOf(false)
     }
 
     val password = rememberSaveable {
         mutableStateOf("")
     }
 
-    var passwordError by remember {
+    var showPassword by rememberSaveable {
         mutableStateOf(false)
     }
 
-    var showPassword by remember {
-        mutableStateOf(false)
-    }
+
 
     Scaffold(
         modifier = Modifier.padding(8.dp),
@@ -222,7 +263,9 @@ fun RegistrationScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     onClick = {
                         register(
                             firstName = firstName.value,
