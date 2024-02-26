@@ -105,9 +105,9 @@ class SeedDataConfig(
 
 
             3 -> {
-                var username = faker.basketball.players().filterNot { it.isWhitespace() }
+                var username = "${faker.basketball.players().filterNot { it.isWhitespace() }}_${Random.nextInt(10000)}"
                 while (userRepository.findByUsernameIgnoreCase(username) != null) {
-                    username = faker.basketball.players().filterNot { it.isWhitespace() }
+                    username ="${faker.basketball.players().filterNot { it.isWhitespace() }}_${Random.nextInt(10000)}"
                 }
                 randomUsername = username
             }

@@ -21,7 +21,7 @@ class FullStory(
 
     var isStoryOpen: Boolean = true,
 
-    var maxStories: Int? = 20,
+    var maxStories: Int = 20,
 
     @ManyToOne
     @JoinColumn(name = "story_owner_id")
@@ -36,29 +36,19 @@ class FullStory(
     @OneToMany(mappedBy = "fullStory", cascade = [CascadeType.ALL], orphanRemoval = true)
     val canon: MutableList<StoryPiece> = mutableListOf()
 
+
     @OneToMany(mappedBy = "fullStory", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val potentialPieces: MutableList<StoryPiece> = mutableListOf()
+    val storyRequests: MutableList<StoryRequest> = mutableListOf()
 
 
-    fun addPotentialPiece(storyPiece: StoryPiece){
-        potentialPieces.add(storyPiece)
+    fun addToCanon(canonPiece: StoryPiece){
+        if (canon.size < maxStories){
+            canon.add(canonPiece)
+        }else throw StoryExceptions.MaxStoriesReached(canon.size, this.title)
     }
 
-
-
-
-    fun addToCanon(storyPiece: StoryPiece){
-        if (potentialPieces.contains(storyPiece)){
-            potentialPieces.remove(storyPiece)
-        }
-        maxStories?.let { max ->
-            if (canon.size < max){
-                canon.add(storyPiece)
-            }
-            else throw StoryExceptions.MaxStoriesReached(storiesInCanon = max, this.title)
-        } ?: kotlin.run {
-            canon.add(storyPiece)
-        }
+    fun addToRequests(storyRequest: StoryRequest) {
+        storyRequests.add(storyRequest)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -92,6 +82,7 @@ class FullStory(
     override fun toString(): String {
         return "FullStory(id=$id, title='$title', topic='$topic', isStoryOpen=$isStoryOpen, storyOwner=$storyOwner, storyStarted=$created, storyLastEdited=$lastEdited)"
     }
+
 
 
 

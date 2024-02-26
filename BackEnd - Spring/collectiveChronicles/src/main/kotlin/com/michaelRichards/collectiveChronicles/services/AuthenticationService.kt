@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 @Service
@@ -41,6 +42,7 @@ class AuthenticationService(
             email = registerRequest.email,
             username = registerRequest.username,
             birthday = registerRequest.birthday,
+            accountCreatedAt = LocalDateTime.now(),
             password = passwordEncoder.encode(registerRequest.password),
             role = role
         )

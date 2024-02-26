@@ -3,7 +3,7 @@ package com.michaelRichards.collectiveChronicles.controllers
 import com.michaelRichards.collectiveChronicles.dtos.requests.FullStoryRequest
 import com.michaelRichards.collectiveChronicles.dtos.requests.StoryPieceRequest
 import com.michaelRichards.collectiveChronicles.dtos.responses.OwnerStoryResponse
-import com.michaelRichards.collectiveChronicles.dtos.responses.PublicStoryResponse
+import com.michaelRichards.collectiveChronicles.dtos.responses.StoryResponse
 import com.michaelRichards.collectiveChronicles.services.StoryService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -30,7 +30,7 @@ class StoryController(
     fun startStory(
         @RequestHeader(AUTHORIZATION) bearerToken: String,
         @RequestBody fullStoryRequest: FullStoryRequest
-    ): ResponseEntity<PublicStoryResponse> =
+    ): ResponseEntity<StoryResponse> =
         ResponseEntity.created(URI(BASE_PATH)).body(storyService.createStory(bearerToken, fullStoryRequest))
 
 
@@ -38,7 +38,7 @@ class StoryController(
     fun getFullStory(
         @RequestHeader(AUTHORIZATION) bearerToken: String,
         @PathVariable("storyId") storyId: Long
-    ): ResponseEntity<PublicStoryResponse> =
+    ): ResponseEntity<StoryResponse> =
         ResponseEntity.ok(storyService.getPublicFullStory(bearerToken,storyId))
 
 
@@ -55,7 +55,7 @@ class StoryController(
         @PathVariable("storyId") storyId: Long,
         @RequestParam("storyPiecePlace1") storyPiecePlace1: Int,
         @RequestParam("storyPiecePlace2") storyPiecePlace2: Int
-    ): ResponseEntity<PublicStoryResponse> =
+    ): ResponseEntity<StoryResponse> =
         ResponseEntity.ok(storyService.swapStoryOrder(bearerToken,storyId, storyPiecePlace1, storyPiecePlace2))
 
     @DeleteMapping("{storyId}")

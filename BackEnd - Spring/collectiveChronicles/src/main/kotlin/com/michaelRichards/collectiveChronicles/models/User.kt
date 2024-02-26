@@ -68,8 +68,13 @@ class User(
     @OneToMany(mappedBy = "storyOwner", orphanRemoval = true, cascade = [CascadeType.ALL])
     val ownedStories: MutableList<FullStory> = mutableListOf()
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = [CascadeType.ALL])
-    val storyPieces: MutableList<StoryPiece> = mutableListOf()
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val storyRequests: MutableSet<StoryRequest> = mutableSetOf()
+
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val storyPieces: MutableSet<StoryPiece> = mutableSetOf()
 
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf(
@@ -105,13 +110,6 @@ class User(
     fun removeOwnedStory(fullStory: FullStory) : Boolean = ownedStories.remove(fullStory)
 
 
-    fun addStoryPiece(storyPiece: StoryPiece){
-        if(storyPieces.contains(storyPiece))
-            throw DuplicateKeyException("")
-        storyPieces.add(storyPiece)
-    }
-
-    fun removeStoryPiece(storyPiece: StoryPiece) : Boolean = storyPieces.remove(storyPiece)
 
 
     override fun equals(other: Any?): Boolean {
