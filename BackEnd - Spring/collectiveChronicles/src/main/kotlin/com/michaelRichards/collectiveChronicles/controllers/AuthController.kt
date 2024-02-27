@@ -28,8 +28,7 @@ class AuthController(
 
     @PostMapping("/register")
     fun register(
-        @RequestBody registerRequest: RegisterRequest,
-        @RequestParam profileImage: MultipartFile?
+        @RequestBody registerRequest: RegisterRequest
     ): ResponseEntity<AuthenticationResponse> = ResponseEntity.ok().body(authenticationService.register(registerRequest = registerRequest))
 
 
