@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -38,6 +39,9 @@ class User(
     @field:NotBlank
     @Column(unique = true)
     var email: String = "",
+
+    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var profileImage: ProfileImage? = null,
 
     @field:NotBlank
     @Column(name = "password")
@@ -75,6 +79,7 @@ class User(
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
     val storyPieces: MutableSet<StoryPiece> = mutableSetOf()
+
 
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf(

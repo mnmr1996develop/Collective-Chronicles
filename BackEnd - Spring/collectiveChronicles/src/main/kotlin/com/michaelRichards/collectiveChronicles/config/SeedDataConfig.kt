@@ -1,8 +1,11 @@
 package com.michaelRichards.collectiveChronicles.config
 
+import com.michaelRichards.collectiveChronicles.models.ProfileImage
 import com.michaelRichards.collectiveChronicles.models.Role
 import com.michaelRichards.collectiveChronicles.models.User
+import com.michaelRichards.collectiveChronicles.repositories.ProfileImageRepository
 import com.michaelRichards.collectiveChronicles.repositories.UserRepository
+import com.michaelRichards.collectiveChronicles.utils.ImageUtils
 import io.github.serpro69.kfaker.Faker
 import org.springframework.boot.CommandLineRunner
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -19,6 +22,7 @@ import kotlin.random.Random
 class SeedDataConfig(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
+    private val profileImageRepository: ProfileImageRepository
 ) : CommandLineRunner {
 
     private val faker = Faker()
@@ -60,6 +64,8 @@ class SeedDataConfig(
             }
             val username = generateRandomUsername(firstName, lastName, birthday)
 
+
+
             val user = User(
                 firstName = firstName,
                 lastName = lastName,
@@ -68,13 +74,25 @@ class SeedDataConfig(
                 password = passwordEncoder.encode("Password2!"),
                 birthday = birthday,
                 role = Role.ROLE_USER,
-                accountCreatedAt = generateRandomAccountCreated(),
+                accountCreatedAt = generateRandomAccountCreated()
             )
 
-
-            userRepository.save(user)
+            val savedUser = userRepository.save(user)
+            saveProfileImage(savedUser)
         }
     }
+
+    private fun saveProfileImage(user: User){
+        val profileImage = ProfileImage(
+            image = ImageUtils.compressImage(ImageUtils.createBasicProfileImage(user.firstName[0].uppercaseChar())),
+            type = "image/png",
+            user = user
+        )
+        user.profileImage = profileImage
+        userRepository.save(user)
+    }
+
+
 
     private fun generateRandomBirthday(): LocalDate {
         val start = LocalDate.of(1960, 1, 1)

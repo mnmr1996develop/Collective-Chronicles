@@ -1,15 +1,19 @@
 package com.michaelRichards.collectiveChronicles.services
 
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.michaelRichards.collectiveChronicles.dtos.requests.AuthenticateRequest
 import com.michaelRichards.collectiveChronicles.dtos.requests.RegisterRequest
 import com.michaelRichards.collectiveChronicles.dtos.responses.AuthenticationResponse
 import com.michaelRichards.collectiveChronicles.exceptions.authorizationExceptions.AuthorizationExceptions
+import com.michaelRichards.collectiveChronicles.models.ProfileImage
 import com.michaelRichards.collectiveChronicles.models.Role
 import com.michaelRichards.collectiveChronicles.models.Token
 import com.michaelRichards.collectiveChronicles.models.User
+import com.michaelRichards.collectiveChronicles.repositories.ProfileImageRepository
 import com.michaelRichards.collectiveChronicles.repositories.TokenRepository
 import com.michaelRichards.collectiveChronicles.repositories.UserRepository
+import com.michaelRichards.collectiveChronicles.utils.ImageUtils
 import com.michaelRichards.collectiveChronicles.utils.Variables
 import io.jsonwebtoken.security.InvalidKeyException
 import jakarta.servlet.http.HttpServletRequest
@@ -32,10 +36,13 @@ class AuthenticationService(
     private val tokenRepository: TokenRepository,
     private val tokenService: TokenService,
     private val userService: UserService,
+    private val profileImageRepository: ProfileImageRepository,
     private val authenticationManager: AuthenticationManager
 ) {
 
     fun register(registerRequest: RegisterRequest, role: Role = Role.ROLE_USER): AuthenticationResponse {
+
+
         val user = User(
             firstName = registerRequest.firstName,
             lastName = registerRequest.lastName,
@@ -54,10 +61,21 @@ class AuthenticationService(
         val jwtToken = jwtService.generateToken(userDetails = user)
         val refreshToken = jwtService.generateRefreshToken(user)
 
+        saveProfileImage(savedUser)
 
         saveUserToken(savedUser, jwtToken)
 
         return AuthenticationResponse(accessToken = jwtToken, refreshToken = refreshToken)
+    }
+
+    private fun saveProfileImage(user: User){
+        val profileImage = ProfileImage(
+            image = ImageUtils.compressImage(ImageUtils.createBasicProfileImage(user.firstName[0].uppercaseChar())),
+            type = "image/png",
+            user = user
+        )
+        user.profileImage = profileImage
+        userService.save(user)
     }
 
     private fun verifyEmail(email: String) {

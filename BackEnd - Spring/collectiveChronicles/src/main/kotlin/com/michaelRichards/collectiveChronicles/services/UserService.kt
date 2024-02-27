@@ -2,21 +2,26 @@ package com.michaelRichards.collectiveChronicles.services
 
 import com.michaelRichards.collectiveChronicles.dtos.responses.AdminDetailResponse
 import com.michaelRichards.collectiveChronicles.dtos.responses.UserDetailsDTO
+import com.michaelRichards.collectiveChronicles.models.ProfileImage
 import com.michaelRichards.collectiveChronicles.models.User
+import com.michaelRichards.collectiveChronicles.repositories.ProfileImageRepository
 import com.michaelRichards.collectiveChronicles.repositories.UserRepository
+import com.michaelRichards.collectiveChronicles.utils.ImageUtils
 import com.michaelRichards.collectiveChronicles.utils.Variables
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
 
 @Service
 @Transactional
 class UserService(
     private val userRepository: UserRepository,
-    private val jwtService: JWTService
+    private val profileImageRepository: ProfileImageRepository,
+    private val jwtService: JWTService,
 ) : UserDetailsService {
 
     override fun loadUserByUsername(username: String?): UserDetails =
@@ -91,7 +96,33 @@ class UserService(
     fun deleteUserByToken(jwtToken: String) = deleteByUsername(extractUsernameFromBearerToken(bearerToken = jwtToken))
     fun getUserDetails(jwtToken: String): UserDetailsDTO  = userToUserDTO(findUserByBearerToken(jwtToken))
 
+    fun uploadProfileImage(jwtToken: String, profileImage: MultipartFile): UserDetailsDTO {
+        val user = findUserByBearerToken(jwtToken)
 
+        user.profileImage?.let {img ->
+            img.image = ImageUtils.compressImage(profileImage.bytes)
+            img.type= profileImage.contentType!!
+            profileImageRepository.save(img)
+        } ?: {
+            val tmpProfileImage = ProfileImage(
+                type = profileImage.contentType!!,
+                image = ImageUtils.compressImage(profileImage.bytes),
+                user = user
+            )
+            user.profileImage = tmpProfileImage
+        }
+
+
+        userRepository.save(user)
+        return userToUserDTO(user)
+    }
+
+    fun downloadImage(jwtToken: String): Pair<ByteArray, String>{
+        val user = findUserByBearerToken(jwtToken)
+
+        val image = ImageUtils.decompressImage(user.profileImage!!.image)
+        return Pair(image, user.profileImage!!.type)
+    }
 
 
 }

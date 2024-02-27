@@ -5,14 +5,18 @@ import com.michaelRichards.collectiveChronicles.dtos.responses.StoryPieceRespons
 import com.michaelRichards.collectiveChronicles.dtos.responses.UserDetailsDTO
 import com.michaelRichards.collectiveChronicles.services.StoryService
 import com.michaelRichards.collectiveChronicles.services.UserService
+import com.michaelRichards.collectiveChronicles.utils.ImageUtils
 import com.michaelRichards.collectiveChronicles.utils.Variables
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping(Variables.V1_USER_CONTROLLER_PATH)
@@ -26,6 +30,29 @@ class UserController(
         @RequestHeader(Variables.AUTHORIZATION) jwtToken: String
     ): ResponseEntity<UserDetailsDTO> =
         ResponseEntity.ok(userService.getUserDetails(jwtToken))
+
+    @PostMapping("/profile-image")
+    fun uploadProfileImage(
+        @RequestParam profileImage: MultipartFile,
+        @RequestHeader(Variables.AUTHORIZATION) jwtToken: String
+    ): ResponseEntity<UserDetailsDTO> {
+        if (profileImage.contentType == "image/jpeg" || profileImage.contentType == "image/png" || profileImage.contentType == "image/jpg") {
+            return ResponseEntity.ok(userService.uploadProfileImage(jwtToken, profileImage))
+        }
+        throw Exception("")
+    }
+
+    @GetMapping("/profile-image")
+    fun getProfileImage(
+        @RequestHeader(Variables.AUTHORIZATION) jwtToken: String
+    ): ResponseEntity<ByteArray> {
+
+        val  (image, type) = userService.downloadImage(jwtToken)
+
+        return ResponseEntity.ok().contentType(MediaType.valueOf(type))
+            .body(image)
+    }
+
 
     @DeleteMapping
     fun deleteAccount(

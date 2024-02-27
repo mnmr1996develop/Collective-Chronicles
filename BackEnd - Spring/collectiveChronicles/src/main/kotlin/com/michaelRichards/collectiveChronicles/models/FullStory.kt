@@ -29,8 +29,12 @@ class FullStory(
 
     val created: LocalDateTime? = null,
 
-    var lastEdited: LocalDateTime? = null
+    var lastEdited: LocalDateTime? = null,
 
+
+    @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
+    @JoinColumn(name = "book_covers_id")
+    var bookCover: BookCover? = null
 ) {
 
     @OneToMany(mappedBy = "fullStory", cascade = [CascadeType.ALL], orphanRemoval = true)
@@ -39,6 +43,7 @@ class FullStory(
 
     @OneToMany(mappedBy = "fullStory", cascade = [CascadeType.ALL], orphanRemoval = true)
     val storyRequests: MutableList<StoryRequest> = mutableListOf()
+
 
 
     fun addToCanon(canonPiece: StoryPiece){
